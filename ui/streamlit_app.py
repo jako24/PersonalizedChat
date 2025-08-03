@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 from uuid import uuid4
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/chat")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://your-backend-url.com/chat")
 st.set_page_config(page_title="Product Chatbot", layout="centered")
 
 if "session_id" not in st.session_state:
