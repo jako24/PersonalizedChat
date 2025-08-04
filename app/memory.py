@@ -68,25 +68,21 @@ def get_history(session_id: str) -> BaseChatMessageHistory:
     restarts and can be shared by multiple workers/containers.
     """
     if session_id not in _history_cache:
-        # Build Redis URL from environment variables
-        redis_host = os.getenv("REDIS_HOST", "localhost")
-        redis_port = int(os.getenv("REDIS_PORT", 6379))
-        redis_password = os.getenv("REDIS_PASSWORD")
-        redis_db = int(os.getenv("REDIS_DB", 0))
-        
-        # Construct Redis URL
-        if redis_password:
-            redis_url = f"redis://:{redis_password}@{redis_host}:{redis_port}/{redis_db}"
-        else:
-            redis_url = f"redis://{redis_host}:{redis_port}/{redis_db}"
-        
-        ttl = int(os.getenv("REDIS_TTL_SECONDS", "0"))
-        _history_cache[session_id] = RedisChatMessageHistory(
-            session_id=session_id,  # Use session_id directly, not with prefix
-            url=redis_url,
-            key_prefix="chat_history:",  # Specify the prefix explicitly
-            ttl=ttl if ttl > 0 else None,  # optional auto-expiry
-        )
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        try:
+            ttl = int(os.getenv("REDIS_TTL_SECONDS", "3600")) # Expire after 1 hour
+            _history_cache[session_id] = RedisChatMessageHistory(
+                session_id=session_id,
+                url=redis_url,
+                key_prefix="chat_history:",
+                ttl=ttl if ttl > 0 else None,
+            )
+            # Test connection
+            _history_cache[session_id].messages
+            print(f"✅ Successfully connected to Redis for session: {session_id}")
+        except Exception as e:
+            print(f"⚠️ Redis connection failed, falling back to in-memory history: {e}")
+            _history_cache[session_id] = ChatMessageHistory()
 
     return _history_cache[session_id]
 

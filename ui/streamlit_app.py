@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 from uuid import uuid4
 
-BACKEND_URL = os.getenv("BACKEND_URL", "https://your-backend-url.com/chat")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/chat")
 st.set_page_config(page_title="Product Chatbot", layout="centered")
 
 if "session_id" not in st.session_state:
@@ -33,6 +33,8 @@ if prompt:
     payload = {"session_id": st.session_state.session_id, "message": prompt}
     try:
         r = requests.post(st.session_state.backend_url, json=payload, timeout=60)
+        # st.code(f"Status code: {r.status_code}")
+        # st.code(f"Response text: {r.text}")
         r.raise_for_status()
         reply = r.json()["reply"]
     except Exception as e:
