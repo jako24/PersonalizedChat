@@ -2,6 +2,20 @@ import os
 import requests
 import streamlit as st
 from uuid import uuid4
+import uvicorn
+from threading import Thread
+from app.server import app as fastapi_app
+
+# --- Backend Server --- 
+
+def run_backend():
+    uvicorn.run(fastapi_app, host="0.0.0.0", port=8000)
+
+backend_thread = Thread(target=run_backend)
+backend_thread.daemon = True
+backend_thread.start()
+
+# --- Streamlit App ---
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/chat")
 st.set_page_config(page_title="Product Chatbot", layout="centered")
