@@ -1,6 +1,6 @@
 # import os
 # from typing import Dict
-# from langchain.memory import ChatMessageHistory
+# from langchain_community.chat_message_histories import ChatMessageHistory
 # from langchain_core.chat_history import BaseChatMessageHistory
 
 # # In-memory by default; switch to Redis for prod to persist sessions
@@ -29,7 +29,7 @@ Optionally set REDIS_TTL_SECONDS to auto-expire idle sessions.
 import os
 from typing import Dict
 from redis import Redis
-from langchain.memory import ChatMessageHistory
+from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 
