@@ -213,7 +213,7 @@ def retrieve_products(query: str) -> Tuple[List[Tuple[str, float]], List[Documen
                 "stage": "product_retrieval",
                 "products_count": len(final_hits),
                 "search_method": "intelligent_vector_search",
-                "search_terms_used": search_terms
+                "search_terms_used": ", ".join(search_terms)
             }
         )
         
