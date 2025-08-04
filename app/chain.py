@@ -21,9 +21,15 @@ from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import Document
 from .catalog_utils import normalize_name, fuzzy_best_match
+from scripts.build_index import build_and_save_index
 
 # Load vectorstore once
 _embeddings = OpenAIEmbeddings(model=EMBED_MODEL)
+
+if not os.path.exists(os.path.join(INDEX_DIR, "index.faiss")):
+    print("FAISS index not found. Building and saving a new one...")
+    build_and_save_index()
+
 _vector = FAISS.load_local(INDEX_DIR, _embeddings, allow_dangerous_deserialization=True)
 
 # Preload all display names for fuzzy fallback
@@ -43,7 +49,7 @@ def _language_for(text: str) -> str:
 @langwatch.span(type="llm", name="Intent Understanding")
 def _understand_intent_with_llm(query: str) -> List[str]:
     """Stage 1: Use LLM to understand user intent and generate relevant search terms"""
-    intent_prompt = f"""Analyze this customer request: "{query}"
+    intent_prompt = f"""Analyze this customer request: "{query}""
 
 You're helping a specialty Mexican ingredient and health food store. Generate search terms that match how products are named in our catalog.
 
