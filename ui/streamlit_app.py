@@ -1,9 +1,13 @@
 import os
+import sys
 import requests
 import streamlit as st
 from uuid import uuid4
 import uvicorn
 from threading import Thread
+
+# Add project root to Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app.server import app as fastapi_app
 
 # --- Backend Server --- 
