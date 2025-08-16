@@ -19,7 +19,7 @@ from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 
-from app.memory import get_history
+from app.memory import get_history, _redis
 from app.chain import answer
 
 app = FastAPI(title="Product Chatbot", version="1.0.0")
@@ -56,7 +56,23 @@ def chat(req: ChatRequest, x_api_key: Optional[str] = Header(None)):
         input=req.message
     )
 
-    history = get_history(req.session_id)
+    try:
+        history = get_history(req.session_id)
+    except Exception as e:
+        # Track errors in LangWatch
+        trace.update(
+            output=f"Error: {str(e)}",
+            metadata={
+                "user_id": req.session_id,
+                "thread_id": req.session_id,
+                "language_hint": req.lang_hint or "auto",
+                "message_length": len(req.message),
+                "endpoint": "/chat",
+                "status": "error",
+                "error_type": type(e).__name__
+            }
+        )
+        raise HTTPException(status_code=503, detail=f"Could not connect to chat history service: {e}")
 
     # Generate response with LangWatch tracking
     try:
@@ -97,6 +113,15 @@ def chat(req: ChatRequest, x_api_key: Optional[str] = Header(None)):
     history.add_ai_message(reply)
 
     return ChatResponse(reply=reply, session_id=req.session_id)
+
+@app.get("/health")
+def health():
+    try:
+        r = _redis()
+        r.ping()
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Redis connection error: {e}")
 
 if __name__ == "__main__":
     uvicorn.run("app.server:app", host="0.0.0.0", port=8000, reload=False)
