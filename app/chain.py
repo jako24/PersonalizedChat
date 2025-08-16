@@ -68,9 +68,15 @@ def build_and_save_index():
 # Load vectorstore once
 _embeddings = OpenAIEmbeddings(model=EMBED_MODEL)
 
+# if not os.path.exists(os.path.join(INDEX_DIR, "index.faiss")):
+#     print("FAISS index not found. Building and saving a new one...")
+#     build_and_save_index()
+
 if not os.path.exists(os.path.join(INDEX_DIR, "index.faiss")):
-    print("FAISS index not found. Building and saving a new one...")
-    build_and_save_index()
+    raise FileNotFoundError(
+        f"FAISS index not found at {INDEX_DIR}. "
+        "Please run the `scripts/build_index.py` script to create it."
+    )
 
 _vector = FAISS.load_local(INDEX_DIR, _embeddings, allow_dangerous_deserialization=True)
 
