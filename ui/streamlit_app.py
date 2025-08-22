@@ -1,23 +1,7 @@
 import os
-import sys
 import requests
 import streamlit as st
 from uuid import uuid4
-import uvicorn
-from threading import Thread
-
-# Add project root to Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app.server import app as fastapi_app
-
-# --- Backend Server --- 
-
-def run_backend():
-    uvicorn.run(fastapi_app, host="0.0.0.0", port=8000)
-
-backend_thread = Thread(target=run_backend)
-backend_thread.daemon = True
-backend_thread.start()
 
 # --- Streamlit App ---
 
@@ -51,8 +35,6 @@ if prompt:
     payload = {"session_id": st.session_state.session_id, "message": prompt}
     try:
         r = requests.post(st.session_state.backend_url, json=payload, timeout=60)
-        # st.code(f"Status code: {r.status_code}")
-        # st.code(f"Response text: {r.text}")
         r.raise_for_status()
         reply = r.json()["reply"]
     except Exception as e:
